@@ -2,10 +2,19 @@ import requests
 import json
 import os
 import re
+import random
 
 ACCOUNTS_FILE = 'accounts.txt'
 DATABASE_FILE = 'database.json'
 SMARTLINK = "https://thoroughgear.com/k3FiUr"
+
+# List ya Nitter Instances (Tuna-rotate ili tusinaswe)
+NITTER_INSTANCES = [
+    "https://nitter.net",
+    "https://nitter.cz",
+    "https://nitter.privacydev.net",
+    "https://nitter.it"
+]
 
 def get_accounts():
     if not os.path.exists(ACCOUNTS_FILE): return []
@@ -27,49 +36,47 @@ def scrape():
     db = load_db()
     existing_ids = {str(item['id']) for item in db if 'id' in item}
     new_added = 0
-
-    # Ninja Headers - Kujifanya iPhone
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1',
-        'Accept': 'application/json',
-        'Referer': 'https://twitter.com/'
-    }
+    
+    instance = random.choice(NITTER_INSTANCES)
 
     for user in accounts:
-        print(f"Checking: @{user}")
+        print(f"Ninja anavizia: @{user} kupitia {instance}")
         try:
-            # Tunatumia Public API ya Syndication (Hii haihitaji Login)
-            api_url = f"https://syndication.twitter.com/srv/timeline-profile/screen-name/{user}"
-            res = requests.get(api_url, headers=headers)
+            # RSS Feed ya Nitter ni rahisi kuisoma na haina ulinzi
+            api_url = f"{instance}/{user}/rss"
+            res = requests.get(api_url, timeout=15)
             
-            # Tafuta IDs za Tweets kwenye HTML (Mbinu ya kienyeji lakini inafanya kazi)
-            html_content = res.text
-            tweet_ids = re.findall(r'tweet-(\d+)', html_content)
+            # Tunatafuta Tweet IDs kwenye RSS feed
+            # Link huwa inafanana na: instance/user/status/123456789#m
+            tweet_ids = re.findall(r'status/(\實+)', res.text)
             
+            if not tweet_ids:
+                # Jaribu mbinu nyingine ya ID search
+                tweet_ids = re.findall(r'status/(\d+)', res.text)
+
             for t_id in list(set(tweet_ids)):
                 if t_id not in existing_ids:
-                    # Tunatengeneza Embed URL ambayo ndio video yenyewe
-                    # X inaruhusu embed links bila ulinzi mkali
-                    video_embed = f"https://platform.twitter.com/embed/Tweet.html?id={t_id}"
-                    
+                    # Tunatengeneza Video Embed (Hii itafanya kazi kwenye site yako)
+                    # Tunatumia 'video-player.twimg.com' logic au Embed
                     db.append({
                         "id": t_id,
-                        "url": video_embed,
-                        "thumb": f"https://pbs.twimg.com/media/dummy_{t_id}.jpg", # Thumbnail itajijaza yenyewe ikicheza
+                        "url": f"https://platform.twitter.com/embed/Tweet.html?id={t_id}",
+                        "thumb": f"https://nitter.net/pic/media%2Fplaceholder.jpg",
                         "source": user,
-                        "likes": f"{os.urandom(1)[0] % 50 + 1}.{os.urandom(1)[0] % 9}K",
+                        "likes": f"{random.randint(10, 99)}.{random.randint(1, 9)}K",
                         "ad_link": SMARTLINK
                     })
                     existing_ids.add(t_id)
                     new_added += 1
         except Exception as e:
-            print(f"Error on {user}: {e}")
+            print(f"Instance {instance} imegoma kwa {user}: {e}")
+            continue
 
     if new_added > 0:
         save_db(db)
-        print(f"Safi! Tumeiba video {new_added} mpya.")
+        print(f"Oyaa! Tumeongeza video {new_added} mpya.")
     else:
-        print("Bado mkavu! X wamefunga mlango. Tutajaribu njia nyingine.")
+        print("Bado kiza kinene! Nitter instances zinaweza kuwa zimelemewa.")
 
 if __name__ == "__main__":
     scrape()
