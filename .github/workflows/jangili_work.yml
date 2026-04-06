@@ -1,0 +1,39 @@
+name: TIKTOKprn Auto Scraper
+
+on:
+  schedule:
+    # Hii inamaanisha kila saa (Dakika ya 0 ya kila saa)
+    - cron: '0 * * * *'
+  workflow_dispatch: # Hii inaruhusu wewe kubonyeza "Run" manually ukitaka kuanza sasa hivi
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/checkout@v3
+      with:
+        python-version: '3.9'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Run Scraper
+      run: python scraper.py
+
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "GitHub Action"
+        git config --global user.email "action@github.com"
+        git add database.json
+        git commit -m "Ujangili Update: New Videos Added" || echo "Hakuna video mpya kwa sasa"
+        git push
