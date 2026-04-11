@@ -1430,5 +1430,21 @@
         "source": "wrto1234",
         "likes": "64K",
         "ad_link": "https://thoroughgear.com/k3FiUr"
+    },
+    {
+        "id": "2042951007508861060",
+        "url": "https://platform.twitter.com/embed/Tweet.html?id=2042951007508861060",
+        "thumb": "https://pbs.twimg.com/media/placeholder.jpg",
+        "source": "NameActress",
+        "likes": "31K",
+        "ad_link": "https://thoroughgear.com/k3FiUr"
+    },
+    {
+        "id": "2042950414186725786",
+        "url": "https://platform.twitter.com/embed/Tweet.html?id=2042950414186725786",
+        "thumb": "https://pbs.twimg.com/media/placeholder.jpg",
+        "source": "NameActress",
+        "likes": "11K",
+        "ad_link": "https://thoroughgear.com/k3FiUr"
     }
 ]
